@@ -228,27 +228,27 @@ class Dashboard(object):
             self.miniroot.destroy()
             del self.password
         p2p = Connections()
-        p2p.runLogReporter(self.data, index, password)
+        p2p.runLogReporter(self.data, index, password=password)
 
     def runServerPeriodically(self, index):
         #self.miniroot.destroy()
+        print "Running Periodically"
         print self.frequencyBox.get()
         print self.dateBox.get()
         #print self.password.get()
-        #p2p = Connections()
+        p2p = Connections(self.root)
         try:
             password = self.password.get()
         except AttributeError:
             self.miniroot.destroy()
-            #del self.password
-            #p2p.runLogReporterPeriodically(self.data, index, freq=self.frequencyBox.get(),
-            #                               date_filter=self.dateBox.get())
+            p2p.runLogReporter(self.data, index, freq=self.frequencyBox.get(),
+                               date_filter=self.dateBox.get())
         else:
             self.miniroot.destroy()
             del self.password
-            print password
-            #p2p.runLogReporterPeriodically(self.data, index, freq=self.frequencyBox.get(),
-            #                               date_filter=self.dateBox.get(), password=password)
+            #print password
+            p2p.runLogReporter(self.data, index, freq=self.frequencyBox.get(),
+                               date_filter=self.dateBox.get(), password=password)
         showinfo("Running", "This just ran")
 
     def rerunLogReporter(self, index):

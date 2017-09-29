@@ -11,7 +11,8 @@ import emailer
 import re
 
 class Connections(object):
-    def __init__(self):
+    def __init__(self, root):
+        self.root = root
         self.platform = platform.system()
         self.server = ""
         self.ip = ""
@@ -25,7 +26,7 @@ class Connections(object):
         self.email = ""
         self.date_re = re.compile('.{3} .* .{2}:.{2}:.{2}') 
 
-    def runLogReporter(self, data, index, password):
+    def runLogReporter(self, data, index, password=None, freq=None, date_filter="All"):
         '''Choose which connection to use based on the data'''
         self.email = data["email"]
         self.sendemail = data["sendemail"] #True or False
@@ -41,6 +42,9 @@ class Connections(object):
         self.port = data["port"]
         self.password = password
         self.UID = data["UID"]
+        self.frequencyVal = None
+        if freq is not None:
+            self.frequencyVal = 120000
         
         
         if data["local"]:
@@ -60,6 +64,9 @@ class Connections(object):
                 else:
                     self.Linux2Linux()
             
+
+    def runLogReporterPeriodically(self, date, index, freq=None, date_filter="All", password=None):
+        pass
 
     # Connecting Linux -> Self, Linux, Windows
     def Linux2Self(self):
@@ -86,7 +93,8 @@ class Connections(object):
         #    showinfo("Empty", "Nothing to report")
         #if self.frequencyVal is not None:
         #    self.timer = self.root.after(self.frequencyVal, self.Linux2Self)
-
+        if self.frequencyVal is not None:
+            self.timer = self.root.after(self.frequencyVal, self.Linux2Self)
     
     def Linux2Linux(self):
         '''Connect to server, read log file and return contents.  Ultimately want to loop through all machines'''
