@@ -177,37 +177,33 @@ class Connections(object):
         print self.data["UID"]
         logwin.getAllEvents(server, logTypes, savefolder, keywords, self.data["UID"], self.trimdate)
         
-    """
+    
     def Windows2Linux(self):
         print "Connecting Windows to Linux"
-        name = self.serverBox.get()
-        ipaddress = self.ipBox.get()
-        password = self.passwordBox.get()
-
-        paths = []
-        for path in self.pathBoxes:
-            paths.append(path.get())
-
         command = ""
-        for path in paths:
-            command = command + "echo " + "\""+path+"\"" +"; cat " + path + "; "
-        command = command + "echo"
+        result = []
+        for i, path in enumerate(self.logpaths):
+            if path[0] != "":
+                command = command + "echo " + "\""+path[0]+"\"" +"; cat " + path[0] + "; echo"
 
-        cmd = ["plink.exe", name+"@"+ipaddress, "-pw", password, "-C", command]
-        #print cmd
-        ssh = Popen(cmd, stdout=PIPE, stderr=PIPE)
-        result = ssh.stdout.readlines()
-        #print len(result)
-        if len(result) > 0:
-            reported = self.trimResults(result)
-            if reported:
-                if self.frequencyVal is None:
-                    showinfo("Saved", "Windows Report Saved at "+ self.savepath)
-            else:
-                showinfo("Empty", "Nothing to report")
-            if self.frequencyVal is not None:
-                self.timer = self.root.after(self.frequencyVal, self.Windows2Linux)
-        
+                if self.port == "":
+                    cmd = ["plink.exe", self.server+"@"+self.ip, "-pw", self.password, "-C", command]
+
+                else:
+                    cmd = ["plink.exe", self.server+"@"+self.ip, "-pw", self.password, "-C", command]
+
+            
+                ssh = Popen(cmd, stdout=PIPE, stderr=PIPE)
+                contents = ssh.stdout.readlines()
+                result.append("\n\n" + path[0] + "\n\n")
+                if len(contents) > 0:
+                    temp = self.trimResultsByKeywords(contents, i)
+                    result.append(self.trimResultsByDate(temp))
+
+        self.saveReport(result)
+
+                
+    """    
     def Windows2Windows(self):
         print "Connecting Windows to Windows"
         '''Method for connecting to a server while on a Windows platform'''
@@ -288,7 +284,10 @@ class Connections(object):
     def generateFilename(self):
         '''Generate the filename for the report'''
         ct = time.localtime()
-        name = self.platform
+        if self.data["local"]:
+            name = self.platform
+        else:
+            name = self.data["remote"]
         if self.server == "":
             server = "local"
         else:
