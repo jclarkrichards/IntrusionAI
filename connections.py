@@ -8,7 +8,7 @@ import platform
 if platform.system() == "Windows":
     import logwin
 import emailer
-
+import re
 
 class Connections(object):
     def __init__(self):
@@ -23,6 +23,7 @@ class Connections(object):
         self.UID = 0
         self.savepath = os.getcwd()
         self.email = ""
+        self.date_re = re.compile('.{3} .* .{2}:.{2}:.{2}') 
 
     def runLogReporter(self, data, index, password):
         '''Choose which connection to use based on the data'''
@@ -290,54 +291,58 @@ class Connections(object):
         name = self.platform
         if self.server == "":
             server = "local"
+        else:
+            server = self.server
         return name+"-"+server+"-"+str(self.UID)+"_"+str(ct.tm_year)+"-"+str(ct.tm_mon).zfill(2)+"-"+str(ct.tm_mday).zfill(2)+"_"+str(ct.tm_hour).zfill(2)+str(ct.tm_min).zfill(2)+".txt"
         
         
     def filterViaTime(self, line, current_time):
-        '''Assuming all lines start with a time in the format of:  Mmm dd hh:mm:ss'''        
-        month = line[:3]
-        day = int(line[4:6])
-        hour = int(line[7:9])
-        minute = int(line[10:12])
-        second = int(line[13:15])
-        monthDict = {"Jan":1, "Feb":2, "Mar":3, "Apr":4, "May":5, "Jun":6, 
-                     "Jul":7, "Aug":8, "Sep":9, "Oct":10, "Nov":11, "Dec":12}
-        month = monthDict[month]
+        '''Assuming all lines start with a time in the format of:  Mmm dd hh:mm:ss'''
+        if self.date_re.match(line):
+            #print line
+            month = line[:3]
+            day = int(line[4:6])
+            hour = int(line[7:9])
+            minute = int(line[10:12])
+            second = int(line[13:15])
+            monthDict = {"Jan":1, "Feb":2, "Mar":3, "Apr":4, "May":5, "Jun":6, 
+                         "Jul":7, "Aug":8, "Sep":9, "Oct":10, "Nov":11, "Dec":12}
+            month = monthDict[month]
 
-        #print month, day, hour, minute, second
-        #seconds = second + minute * 60 + hour * 3600 + day * 86400
-        seconds = second + 60 * (minute + 60 * (hour + 24 * (day + 30 * month)))
-        month_now = current_time.tm_mon
-        day_now = current_time.tm_mday
-        hour_now = current_time.tm_hour
-        min_now = current_time.tm_min
-        sec_now = current_time.tm_sec
-        #seconds_now = sec_now + min_now * 60 + hour_now*3600 + day_now*86400
-        seconds_now = sec_now + 60 * (min_now + 60 * (hour_now + 24 * (day_now + 30 * month_now)))
-        time_dif = seconds_now - seconds
-        time_check = 0
-        #print "TRIM DATE"
-        #print self.trimdate
-        #print "END TRIM DATE"
-        if self.trimdate == "5 min":
-            time_check = 5*60
-        elif self.trimdate == "10 min":
-            time_check = 10*60
-        elif self.trimdate == "30 min":
-            time_check = 30*60
-        elif self.trimdate == "1 hour":
-            time_check = 60*60
-        elif self.trimdate == "1 day":
-            time_check = 24*60*60
-        elif self.trimdate == "1 week":
-            time_check = 7*24*60*60
-        elif self.trimdate == "1 month":
-            time_check = 30*24*60*60
-        else:
-            return True
-        #print time_dif, time_check
-        if time_dif <= time_check:
-            return True
+            #print month, day, hour, minute, second
+            #seconds = second + minute * 60 + hour * 3600 + day * 86400
+            seconds = second + 60 * (minute + 60 * (hour + 24 * (day + 30 * month)))
+            month_now = current_time.tm_mon
+            day_now = current_time.tm_mday
+            hour_now = current_time.tm_hour
+            min_now = current_time.tm_min
+            sec_now = current_time.tm_sec
+            #seconds_now = sec_now + min_now * 60 + hour_now*3600 + day_now*86400
+            seconds_now = sec_now + 60 * (min_now + 60 * (hour_now + 24 * (day_now + 30 * month_now)))
+            time_dif = seconds_now - seconds
+            time_check = 0
+            #print "TRIM DATE"
+            #print self.trimdate
+            #print "END TRIM DATE"
+            if self.trimdate == "5 min":
+                time_check = 5*60
+            elif self.trimdate == "10 min":
+                time_check = 10*60
+            elif self.trimdate == "30 min":
+                time_check = 30*60
+            elif self.trimdate == "1 hour":
+                time_check = 60*60
+            elif self.trimdate == "1 day":
+                time_check = 24*60*60
+            elif self.trimdate == "1 week":
+                time_check = 7*24*60*60
+            elif self.trimdate == "1 month":
+                time_check = 30*24*60*60
+            else:
+                return True
+            #print time_dif, time_check
+            if time_dif <= time_check:
+                return True
         return False
 
     """
