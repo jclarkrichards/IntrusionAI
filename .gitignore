@@ -1,5 +1,6 @@
 *.pyc
 *.py~
 *.json
+*.json~
 *.txt
 /Records/*

@@ -6,7 +6,7 @@ TEMPLATE = {"UID":0, "name":"", "local":True, "remote":"linux", "server":"", "ip
             "winSecurityKeywords":"", "systemcheck":True, "appcheck":True, "securitycheck":True}
 
 #If no file is found then this is what we use initially in the file
-BASE = {"machine":[], "email":""}
+BASE = {"machine":[], "email":"", "sendemail":False}
 
 WINLOGO = "Images/windowslogo.png"
 LINUXLOGO = "Images/linuxlogo.png"
