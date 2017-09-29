@@ -228,8 +228,60 @@ class Dashboard(object):
         p2p = Connections()
         p2p.runLogReporter(self.data, index, password)
 
+    def runServerPeriodically(self, index):
+        #self.miniroot.destroy()
+        print self.frequencyBox.get()
+        print self.dateBox.get()
+        #print self.password.get()
+        #p2p = Connections()
+        try:
+            password = self.password.get()
+        except AttributeError:
+            self.miniroot.destroy()
+            #p2p.runLogReporterPeriodically(self.data, index, freq=self.frequencyBox.get(),
+            #                               date_filter=self.dateBox.get())
+        else:
+            self.miniroot.destroy()
+            print password
+            #p2p.runLogReporterPeriodically(self.data, index, freq=self.frequencyBox.get(),
+            #                               date_filter=self.dateBox.get(), password=password)
+        showinfo("Running", "This just ran")
+
     def rerunLogReporter(self, index):
-        pass
+        '''Opens up a small window asking for additional info and/or a password'''
+        index -= 1
+
+        self.miniroot = Tk()
+        self.miniroot.wm_title("Additional Info")
+        miniframe = self.win.newFrame(self.miniroot, 10, 10)
+        self.win.newLabel(miniframe, "Frequency", sticky=W)
+        self.win.newLabel(miniframe, "Filter Date", sticky=W, row=1)
+        self.frequencyBox = StringVar(miniframe)
+        opt_freq = ["2 Min", "hourly", "Every 6 hours", "Every 12 hours", "daily", "weekly", "monthly", "None"]
+        self.dateBox = StringVar(miniframe)
+        opt_date = ["5 min", "1 hour", "12 hours", "1 day", "1 week", "1 month", "All"]
+        self.win.newDropMenu(miniframe, self.frequencyBox, opt_freq, col=1)
+        self.win.newDropMenu(miniframe, self.dateBox, opt_date, row=1, col=1)
+
+        if not self.data["machine"][index]["local"]:
+            #s = self.data["machine"][index]["server"]
+            #self.win.newLabel(miniframe, "Server:", sticky=W)
+            #self.win.newLabel(miniframe, s, col=1, sticky=W)
+            self.win.newLabel(miniframe, "Password:", row=2, sticky=W)
+            self.password = self.win.newEntry(miniframe, show="*", row=2, col=1)
+            button = self.win.newButton(miniframe, "Enter", row=2, col=2)
+            button.config(command=lambda:self.runServerPeriodically(index))
+            #self.miniroot.mainloop()
+            #showinfo("Run", "Running the report")
+        else:
+            #showinfo("Run", "Running report")
+            button = self.win.newButton(miniframe, "Enter", row=2, col=2)
+            button.config(command=lambda:self.runServerPeriodically(index))
+            
+        self.miniroot.mainloop()
+
+
+
 
     def graphReport(self, index):
         index -= 1
