@@ -223,8 +223,10 @@ class Dashboard(object):
             password = self.password.get()
         except AttributeError:
             password = None
+        
         if password is not None:
             self.miniroot.destroy()
+            del self.password
         p2p = Connections()
         p2p.runLogReporter(self.data, index, password)
 
@@ -238,10 +240,12 @@ class Dashboard(object):
             password = self.password.get()
         except AttributeError:
             self.miniroot.destroy()
+            #del self.password
             #p2p.runLogReporterPeriodically(self.data, index, freq=self.frequencyBox.get(),
             #                               date_filter=self.dateBox.get())
         else:
             self.miniroot.destroy()
+            del self.password
             print password
             #p2p.runLogReporterPeriodically(self.data, index, freq=self.frequencyBox.get(),
             #                               date_filter=self.dateBox.get(), password=password)
