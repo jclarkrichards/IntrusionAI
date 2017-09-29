@@ -14,6 +14,7 @@ import numpy as np
 #import time
 from constants import *
 import platform
+import re
 
 class Grapher(object):
     def __init__(self, root, main, info={}):
@@ -26,12 +27,13 @@ class Grapher(object):
         #print self.info
         #print "DATA WINDOW INFO"
         #print self.root.winfo_width(), self.root.winfo_height()
-        
+        self.re_linux = re.compile('.{3} .* .{2}:.{2}:.{2}')
+        self.re_windows = re.compile('Event Date/Time: .{2}/.{2}/.{2} .{2}:.{2}:.{2}')
         #self.root.minsize(width=root.winfo_width(), height=271)
         self.win = WindowABC()
         self.createWindow()
         #self.setSettings()
-
+        
     def destroy(self):
         print "Destroy the grapher settings"
         #print os.getcwd()
@@ -66,9 +68,37 @@ class Grapher(object):
     #    self.pathBox.insert(0, folder)
 
     def getEndDates(self, filename):
+        '''Find the first and last dates in this file'''
         data = open(filename, "r").read()
         data_lines = data.split("\n")
-        return data_lines[1][:16], data_lines[-2][:16]
+        pctype = filename.split("/")[-1].split("-")[0]
+        startDate = ""
+        endDate = ""
+        if pctype == "Windows":
+            #forward pass
+            for line in data_lines:
+                if "Event Date/Time:" in line:
+                    endDate = line.split("Event Date/Time: ")[1]
+                    break
+            #backward pass
+            for i in range(len(data_lines)-1, -1, -1):
+                if "Event Date/Time:" in data_lines[i]:
+                    startDate = data_lines[i].split("Event Date/Time: ")[1]
+                    break
+            
+        else:
+            #forward pass
+            for line in data_lines:
+                if self.re_linux.match(line):
+                    startDate = line[:16]
+                    break
+            #backward pass
+            for i in range(len(data_lines)-1, -1, -1):
+                if self.re_linux.match(data_lines[i]):
+                    endDate = data_lines[i][:16]
+                    break
+                
+        return startDate, endDate
 
     def getGraphPoints(self, filename, binsize=10):
         try:
@@ -106,7 +136,8 @@ class Grapher(object):
             data_lines = data.split("\n")
 
             for i in range(1, len(data_lines)):
-                if len(data_lines[i]) > 0:
+                if self.re_linux.match(data_lines[i]):
+                #if len(data_lines[i]) > 0:
                     datetime = data_lines[i][:15].split(":")
                     if len(datetime) == 3:
                         date = datetime[0].split(" ")
@@ -121,11 +152,11 @@ class Grapher(object):
                         seconds = second + 60 * (minute + 60 * (hour + 24 * (day + 30 * month)))
                         times.append(seconds)
 
-        print len(times)
-        print times[0:10]
-        print binsize
+        #print len(times)
+        #print times[0:10]
+        #print binsize
         times = np.array(times) - times[0]
-        print times[0:10]
+        #print times[0:10]
         bins = []
         num = 0
         for i in range(len(times)):
@@ -135,7 +166,7 @@ class Grapher(object):
                 bins.append(num)
                 num = 1
                 times -= times[i]
-        print bins
+        #print bins
         return bins
 
     def fillListBox(self):
@@ -288,12 +319,15 @@ class Grapher(object):
         self.drawGraph(filename)
 
     def drawGraph(self, filename):
+        pctype = filename.split("/")[-1].split("-")[0]
         f = Figure(figsize=(5,5))
         a = f.add_subplot(111)
         values = self.getGraphPoints(filename, self.binBox.get())
         if len(values) > 0:
             start, end = self.getEndDates(filename)
             xvalues = range(len(values))
+            if pctype == "Windows":
+                xvalues.reverse()
             a.plot(xvalues, values)
             a.set_title(start + "  " + end)
             a.set_ylabel("Number of Entries")
