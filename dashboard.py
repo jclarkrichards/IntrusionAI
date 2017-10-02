@@ -227,7 +227,7 @@ class Dashboard(object):
         if password is not None:
             self.miniroot.destroy()
             del self.password
-        p2p = Connections()
+        p2p = Connections(self.root)
         p2p.runLogReporter(self.data, index, password=password)
 
     def runServerPeriodically(self, index):

@@ -62,8 +62,11 @@ class Machine(object):
         remoteFrame = self.win.newFrame(self.mainFrame, 10, 10, row=2, colspan=3, bg=LG)
         self.machineType = IntVar()
         self.win.newLabel(remoteFrame, "Remote Machine Type", bg=LG, justify=LEFT, sticky=W)
-        self.radios = self.win.newRadioButton(remoteFrame, self.machineType, [("Windows", 0), ("Linux", 1)], 
+        self.radios = self.win.newRadioButton(remoteFrame, self.machineType, [("Linux", 1), ("Windows", 0)], 
                                               col=1, sticky=N+S+W, bg=LG)
+        self.machineType.set(1)
+        for radio in self.radios:
+            radio.config(command=self.toggleRemoteMachine)
 
         self.win.newLabel(remoteFrame, "Server Name", row=2, bg=LG, justify=LEFT, sticky=W)
         self.serverBox = self.win.newEntry(remoteFrame, row=2, col=1, required=True)
@@ -86,24 +89,9 @@ class Machine(object):
         remoteFrame.grid_columnconfigure(1, weight=3)
         
         #======================================================================
-        if platform.system() == "Windows":
-            self.windowsPathsFrame = self.win.newFrame(self.mainFrame, 10, 10, row=3, colspan=3, bg=LG)
-            self.win.newLabel(self.windowsPathsFrame, "Log Type", bg=LG)
-            self.win.newLabel(self.windowsPathsFrame, "Keywords", col=1, bg=LG)
-            self.systemCheck = IntVar(value=1)
-            self.appCheck = IntVar(value=1)
-            self.securityCheck = IntVar(value=1)
-            check1 = self.win.newCheck(self.windowsPathsFrame, self.systemCheck, "System", row=1, bg=LG, sticky=W) 
-            check2 = self.win.newCheck(self.windowsPathsFrame, self.appCheck, "Applications", row=2, bg=LG, sticky=W) 
-            check3 = self.win.newCheck(self.windowsPathsFrame, self.securityCheck, "Security", row=3, bg=LG, sticky=W)
-            self.winSystemKeywordsBox = self.win.newEntry(self.windowsPathsFrame, row=1, col=1)
-            self.winAppKeywordsBox = self.win.newEntry(self.windowsPathsFrame, row=2, col=1)
-            self.winSecurityKeywordsBox = self.win.newEntry(self.windowsPathsFrame, row=3, col=1)
-            check1.config(command=self.toggleSystemCheck)
-            check2.config(command=self.toggleAppCheck)
-            check3.config(command=self.toggleSecurityCheck)
-            self.windowsPathsFrame.grid_columnconfigure(0, weight=1)
-            self.windowsPathsFrame.grid_columnconfigure(1, weight=3)
+        #if platform.system() == "Windows":
+        #    self.addWindowsOptions()
+
             
             
         #======================================================================    
@@ -168,7 +156,40 @@ class Machine(object):
         for i in range(len(self.removePathButtons)):
             self.removePathButtons[i].config(command=lambda m=len(self.removePathButtons): self.removePath(m))
             
-                       
+    def addWindowsOptions(self):
+        '''Add more Windows options if Windows is selected'''
+        self.windowsPathsFrame = self.win.newFrame(self.mainFrame, 10, 10, row=3, colspan=3, bg=LG)
+        self.win.newLabel(self.windowsPathsFrame, "Log Type", bg=LG)
+        self.win.newLabel(self.windowsPathsFrame, "Keywords", col=1, bg=LG)
+        self.systemCheck = IntVar(value=1)
+        self.appCheck = IntVar(value=1)
+        self.securityCheck = IntVar(value=1)
+        check1 = self.win.newCheck(self.windowsPathsFrame, self.systemCheck, "System", row=1, bg=LG, sticky=W) 
+        check2 = self.win.newCheck(self.windowsPathsFrame, self.appCheck, "Applications", row=2, bg=LG, sticky=W) 
+        check3 = self.win.newCheck(self.windowsPathsFrame, self.securityCheck, "Security", row=3, bg=LG, sticky=W)
+        self.winSystemKeywordsBox = self.win.newEntry(self.windowsPathsFrame, row=1, col=1)
+        self.winAppKeywordsBox = self.win.newEntry(self.windowsPathsFrame, row=2, col=1)
+        self.winSecurityKeywordsBox = self.win.newEntry(self.windowsPathsFrame, row=3, col=1)
+        check1.config(command=self.toggleSystemCheck)
+        check2.config(command=self.toggleAppCheck)
+        check3.config(command=self.toggleSecurityCheck)
+        self.windowsPathsFrame.grid_columnconfigure(0, weight=1)
+        self.windowsPathsFrame.grid_columnconfigure(1, weight=3)
+        
+    def removeWindowsOptions(self):
+        try:
+            self.windowsPathsFrame.destroy()
+        except:
+            pass
+
+    def toggleRemoteMachine(self):
+        if self.machineType.get() == 0: #Windows as remote
+            self.addWindowsOptions()
+            #print "Windows is remote"
+        else:
+            self.removeWindowsOptions()
+            #print "Linux is remote"
+
     def radioYesNo(self):
         '''When the Yes/No radio buttons are pressed'''
         if self.yesno.get() == 0:

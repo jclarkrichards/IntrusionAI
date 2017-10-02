@@ -134,6 +134,28 @@ class Connections(object):
     
     def Linux2Windows(self):
         print "Connecting Linux to Windows"
+        command = ""
+        result = []
+        for i, path in enumerate(self.logpaths):
+            if path[0] != "":
+                command = command + "echo " + "\""+path[0]+"\"" +"; cat " + path[0] + "; echo"
+                #command = command + "echo"
+
+                if self.port == "":
+                    cmd = ["sshpass", "-p", self.password, "ssh", "-X", 
+                           self.server+"@"+self.ip, command]
+                else:
+                    cmd = ["sshpass", "-p", self.password, "ssh", "-X", 
+                           self.server+"@"+self.ip, "-p", self.port, command]
+                print cmd
+                #ssh = Popen(cmd, stdout=PIPE, stderr=PIPE)
+                #contents = ssh.stdout.readlines()
+                #result.append("\n\n" + path[0] + "\n\n")
+                #if len(contents) > 0:
+                #    temp = self.trimResultsByKeywords(contents, i)
+                #    result.append(self.trimResultsByDate(temp))
+
+        #self.saveReport(result)
         
             
 
