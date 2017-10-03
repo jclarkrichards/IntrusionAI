@@ -78,7 +78,11 @@ def getEventLogs(server, logtype, logPath, keywords):
         print traceback.print_exc(sys.exc_info())
 
     print "Log creation finished.  Location of log is %s" % logPath
-
+    with open(logPath) as f:
+        for line in f:
+            print line
+        
+    
 def getPath(basePath, serverName, logtype, uid):
     ct = time.localtime()
     if serverName is None:
