@@ -8,43 +8,8 @@ import traceback
 import win32con
 import winerror
 
-def filterByDateTime(the_time, trimdate):
-    ct = time.localtime()
-    if trimdate == "5 min":
-        time_check = 5*60
-    elif trimdate == "1 hour":
-        time_check = 60*60
-    elif trimdate == "12 hours":
-        time_check = 12*60*60
-    elif trimdate == "1 day":
-        time_check = 24*60*60
-    elif trimdate == "1 week":
-        time_check = 7*24*60*60
-    elif trimdate == "1 month":
-        time_check = 4*7*24*60*60
-    else:
-        return True
 
-    date, dt = the_time.split(" ")
-    month = int(date.split("/")[0])
-    day = int(date.split("/")[1])
-    hour = int(dt.split(":")[0])
-    minute = int(dt.split(":")[1])
-    second = int(dt.split(":")[2])
-    seconds = second + 60 * (minute + 60 * (hour + 24 * (day + 30 * month)))
-    
-    month_now = ct.tm_mon
-    day_now = ct.tm_mday
-    hour_now = ct.tm_hour
-    min_now = ct.tm_min
-    sec_now = ct.tm_sec
-    seconds_now = sec_now + 60 * (min_now + 60 * (hour_now + 24 * (day_now + 30 * month_now)))
-    time_dif = seconds_now - seconds
-    if time_dif <= time_check:
-        return True
-    return False
-
-def getEventLogs(server, logtype, logPath, keywords, trimdate):
+def getEventLogs(server, logtype, logPath, keywords):
     '''Get event logs from the server by logtype and save to path'''
     print "Logging %s events" % logtype
     log = codecs.open(logPath, encoding='utf-8', mode='w')
@@ -83,29 +48,29 @@ def getEventLogs(server, logtype, logPath, keywords, trimdate):
                     evt_type = str(evt_dict[ev_obj.EventType])
                 #if b == 0:
                 #    print the_time
-                if filterByDateTime(the_time, trimdate):    
-                    if len(keywords) > 0:
-                        for keyword in keywords:
-                            if keyword in msg:
-                                log.write("Event Date/Time: %s\n" % the_time)
-                                log.write("Event ID / Type: %s / %s\n" % (evt_id, evt_type))
-                                log.write("Record #%s\n" % record)
-                                log.write("Source: %s\n\n" % source)
-                                log.write(msg)
-                                log.write("\n\n")
-                                log.write(line_break)
-                                log.write("\n\n")
-                                break
-                    else:
-                        #print "Should not be in here"
-                        log.write("Event Date/Time: %s\n" % the_time)
-                        log.write("Event ID / Type: %s / %s\n" % (evt_id, evt_type))
-                        log.write("Record #%s\n" % record)
-                        log.write("Source: %s\n\n" % source)
-                        log.write(msg)
-                        log.write("\n\n")
-                        log.write(line_break)
-                        log.write("\n\n")
+
+                if len(keywords) > 0:
+                    for keyword in keywords:
+                        if keyword in msg:
+                            log.write("Event Date/Time: %s\n" % the_time)
+                            log.write("Event ID / Type: %s / %s\n" % (evt_id, evt_type))
+                            log.write("Record #%s\n" % record)
+                            log.write("Source: %s\n\n" % source)
+                            log.write(msg)
+                            log.write("\n\n")
+                            log.write(line_break)
+                            log.write("\n\n")
+                            break
+                else:
+                    #print "Should not be in here"
+                    log.write("Event Date/Time: %s\n" % the_time)
+                    log.write("Event ID / Type: %s / %s\n" % (evt_id, evt_type))
+                    log.write("Record #%s\n" % record)
+                    log.write("Source: %s\n\n" % source)
+                    log.write(msg)
+                    log.write("\n\n")
+                    log.write(line_break)
+                    log.write("\n\n")
                 
                             
 
@@ -130,7 +95,7 @@ def getPath(basePath, serverName, logtype, uid):
 
 
 
-def getAllEvents(server, logtypes, basePath, keywords):    
+def getAllEvents(server, logtypes, keywords):    
     #if not server:
     #    serverName = "localhost"
     #else:
@@ -139,12 +104,13 @@ def getAllEvents(server, logtypes, basePath, keywords):
         #path = getPath(basePath, server, logtype, uid)
         #print path
         #path = os.path.join(basePath, "%s_%s_hack.log" % (serverName, logtype))
-        getEventLogs(server, logtype, path, keywords[i], trimdate)
+        path = "junkinthetrunk.txt"
+        getEventLogs(server, logtype, path, keywords[i])
 
 
 
 if __name__ == "__main__":
-    server = None
+    server = "localhost"
     logtypes = ["System"]
-    keywords = []
+    keywords = [""]
     getAllEvents(server, logtypes, keywords)
