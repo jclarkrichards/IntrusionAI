@@ -1,7 +1,7 @@
 from Tkinter import *
 from tkMessageBox import *
 import os
-from subprocess import PIPE, Popen
+from subprocess import PIPE, Popen, check_output
 from window import WindowABC
 import time
 import platform
@@ -99,28 +99,29 @@ class Connections(object):
     def Linux2Linux(self):
         '''Connect to server, read log file and return contents.  Ultimately want to loop through all machines'''
         print "Connecting Linux to Linux"
-        command = ""
+        command = "echo hello; echo"
         result = []
-        for i, path in enumerate(self.logpaths):
-            if path[0] != "":
-                command = command + "echo " + "\""+path[0]+"\"" +"; cat " + path[0] + "; echo"
-                #command = command + "echo"
+        #for i, path in enumerate(self.logpaths):
+        #    if path[0] != "":
+        #        command = command + "echo " + "\""+path[0]+"\"" +"; cat " + path[0] + "; echo"
 
-                if self.port == "":
-                    cmd = ["sshpass", "-p", self.password, "ssh", "-X", 
-                           self.server+"@"+self.ip, command]
-                else:
-                    cmd = ["sshpass", "-p", self.password, "ssh", "-X", 
-                           self.server+"@"+self.ip, "-p", self.port, command]
-            
-                ssh = Popen(cmd, stdout=PIPE, stderr=PIPE)
-                contents = ssh.stdout.readlines()
-                result.append("\n\n" + path[0] + "\n\n")
-                if len(contents) > 0:
-                    temp = self.trimResultsByKeywords(contents, i)
-                    result.append(self.trimResultsByDate(temp))
 
-        self.saveReport(result)
+        if self.port == "":
+            cmd = ["sshpass", "-p", self.password, "ssh", "-X", 
+                   self.server+"@"+self.ip, command]
+        else:
+            cmd = ["sshpass", "-p", self.password, "ssh", "-X", 
+                   self.server+"@"+self.ip, "-p", self.port, command]
+        print cmd
+        ssh = Popen(cmd, stdout=PIPE, stderr=PIPE)
+        contents = ssh.stdout.readlines()
+        print contents
+                #result.append("\n\n" + path[0] + "\n\n")
+                #if len(contents) > 0:
+                #    temp = self.trimResultsByKeywords(contents, i)
+                #    result.append(self.trimResultsByDate(temp))
+
+        #self.saveReport(result)
 
             #if reported:
             #    if self.frequencyVal is None:
@@ -134,22 +135,65 @@ class Connections(object):
     
     def Linux2Windows(self):
         print "Connecting Linux to Windows"
-        command = ""
-        result = []
-        for i, path in enumerate(self.logpaths):
-            if path[0] != "":
-                command = command + "echo " + "\""+path[0]+"\"" +"; cat " + path[0] + "; echo"
-                #command = command + "echo"
+        if self.server == "":
+            server = None
+        else:
+            server = self.server
+        #logTypes = ["System", "Application", "Security"]                                                          
+        logTypes = []
+        keywords = []
 
-                if self.port == "":
-                    cmd = ["sshpass", "-p", self.password, "ssh", "-X", 
-                           self.server+"@"+self.ip, command]
-                else:
-                    cmd = ["sshpass", "-p", self.password, "ssh", "-X", 
-                           self.server+"@"+self.ip, "-p", self.port, command]
-                print cmd
-                #ssh = Popen(cmd, stdout=PIPE, stderr=PIPE)
-                #contents = ssh.stdout.readlines()
+        if "systemcheck" in self.data.keys():
+            if self.data["systemcheck"]:
+                logTypes.append("System")
+                keywords.append(self.expandKeywordChoices(self.data["winSystemKeywords"]))
+                #keywords.append(self.data["winSystemKeywords"].split(","))                                        
+        if "appcheck" in self.data.keys():
+            if self.data["appcheck"]:
+                logTypes.append("Application")
+                keywords.append(self.expandKeywordChoices(self.data["winAppKeywords"]))
+                #keywords.append(self.data["winAppKeywords"].split(","))                                           
+        if "securitycheck" in self.data.keys():
+            if self.data["securitycheck"]:
+                logTypes.append("Security")
+                keywords.append(self.expandKeywordChoices(self.data["winSecurityKeywords"]))
+                #keywords.append(self.data["winSecurityKeywords"].split(","))            
+
+        #print server
+        #print logTypes
+        #print keywords
+        #logwin.getAllEvents(server, logTypes, savefolder, keywords, self.data["UID"], self.trimdate)
+        #if self.password == "":
+        #    self.password = None
+        command = "mkdir POOP"
+        #command = ""
+        result = []
+        
+        #for i, path in enumerate(self.logpaths):
+        #    if path[0] != "":
+        #        command = command + "more logtest.txt;"
+                #command = command + "echo " + "\""+path[0]+"\"" +"; echo"
+                #print command
+        if self.port == "":
+            if self.password != "":
+                cmd = ["sshpass", "-p", self.password, "ssh", "-X", 
+                       self.server+"@"+self.ip, command]
+            else:
+                cmd = ["sshpass", "-p", self.password, "ssh", "-X", self.server+"@"+self.ip, command]
+        else:
+            if self.password != "":
+                cmd = ["sshpass", "-p", self.password, "ssh", "-X", 
+                       self.server+"@"+self.ip, "-p", self.port, command]
+            else:
+                cmd = ["ssh", "-X", self.server+"@"+self.ip, "-p", self.port, command]
+
+        print cmd
+        #cmd = ["sshpass", "-p", "1qaz@WSX", "ssh", "-X", "jonathan@172.16.160.142", "mkdir C:\Users\Jonathan\POOPER"]
+        #print cmd
+        ssh = Popen(cmd, stdout=PIPE, stderr=PIPE)
+        print ""
+        contents = ssh.stdout.readlines()
+        print contents
                 #result.append("\n\n" + path[0] + "\n\n")
                 #if len(contents) > 0:
                 #    temp = self.trimResultsByKeywords(contents, i)
@@ -170,12 +214,7 @@ class Connections(object):
         #logTypes = ["System", "Application", "Security"]
         logTypes = []
         keywords = []
-        #temp = self.keywordBoxes[0].get()
-        #print "VARIOUS THINGS TO CHECK"
-        #print self.email
-        #print self.sendemail
-        #print self.logpaths
-        #print self.keywords
+
         if "systemcheck" in self.data.keys():
             if self.data["systemcheck"]:
                 logTypes.append("System")

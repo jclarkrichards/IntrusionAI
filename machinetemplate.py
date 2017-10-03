@@ -14,6 +14,9 @@ class Machine(object):
         self.root = root
         self.main = main
         self.UID = dataID
+        self.winSystemKeywordsTemp = ""
+        self.winAppKeywordsTemp = ""
+        self.winSecKeywordsTemp = ""
         #self.root.minsize(width=root.winfo_width(), height=500)
         self.pathBoxes = []
         self.pathrow = 2 #row to add next path box if added
@@ -176,8 +179,19 @@ class Machine(object):
         self.windowsPathsFrame.grid_columnconfigure(0, weight=1)
         self.windowsPathsFrame.grid_columnconfigure(1, weight=3)
         
+        
+        #if "winSystemKeywords" in entry.keys():
+        self.winSystemKeywordsBox.insert(0, self.winSystemKeywordsTemp)
+        #if "winAppKeywords" in entry.keys():
+        self.winAppKeywordsBox.insert(0, self.winAppKeywordsTemp)
+        #if "winSecurityKeywords" in entry.keys():
+        self.winSecurityKeywordsBox.insert(0, self.winSecKeywordsTemp)
+
     def removeWindowsOptions(self):
         try:
+            self.winSystemKeywordsTemp = self.winSystemKeywordsBox.get()
+            self.winAppKeywordsTemp = self.winAppKeywordsBox.get()
+            self.winSecKeywordsTemp = self.winSecurityKeywordsBox.get()
             self.windowsPathsFrame.destroy()
         except:
             pass
@@ -288,7 +302,9 @@ class Machine(object):
             template["logpaths"].append([self.pathBoxes[i].get()])
             template["keywords"].append([self.keywordBoxes[i].get()])
 
-        if platform.system() == "Windows":
+        #print "Machine type = " + str(self.machineType)
+        if self.machineType.get() == 0:
+        #if platform.system() == "Windows":
             #if "winSystemKeywords" in template.keys():
             template["winSystemKeywords"] = self.winSystemKeywordsBox.get()
             #if "winAppKeywords" in template.keys():
@@ -336,6 +352,13 @@ class Machine(object):
 
                 if entry["remote"] == "Windows":
                     self.machineType.set(0)
+                    self.addWindowsOptions()
+                    if "winSystemKeywords" in entry.keys():
+                        self.winSystemKeywordsBox.insert(0, entry["winSystemKeywords"])
+                    if "winAppKeywords" in entry.keys():
+                        self.winAppKeywordsBox.insert(0, entry["winAppKeywords"])
+                    if "winSecurityKeywords" in entry.keys():
+                        self.winSecurityKeywordsBox.insert(0, entry["winSecurityKeywords"])
                 else:
                     self.machineType.set(1)
 
@@ -348,14 +371,8 @@ class Machine(object):
                     self.pathBoxes[i].insert(0, entry["logpaths"][i][0])
                     self.keywordBoxes[i].insert(0, entry["keywords"][i][0])
                     
-                if platform.system() == "Windows":
-                    print entry.keys()
-                    if "winSystemKeywords" in entry.keys():
-                        self.winSystemKeywordsBox.insert(0, entry["winSystemKeywords"])
-                    if "winAppKeywords" in entry.keys():
-                        self.winAppKeywordsBox.insert(0, entry["winAppKeywords"])
-                    if "winSecurityKeywords" in entry.keys():
-                        self.winSecurityKeywordsBox.insert(0, entry["winSecurityKeywords"])
+                #if platform.system() == "Windows":
+                #    print entry.keys()
 
     def toggleSystemCheck(self):
         '''Uses the self.systemCheck'''
