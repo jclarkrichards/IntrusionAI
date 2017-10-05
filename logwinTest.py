@@ -112,7 +112,7 @@ def getAllEvents(server, logtypes, keywords):
         getEventLogs(server, logtype, path, keywords[i])
 
 
-
+#def test():
 if __name__ == "__main__":
     server = "localhost"
     logtypes = ["System"]
